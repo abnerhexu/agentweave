@@ -28,12 +28,13 @@
 - CPU-testable host KV page pool with capacity, pinning, LRU eviction, and partial restore.
 - MHA KV cache page-copy interfaces.
 - Targeted radix eviction of an unshared, unlocked leaf suffix.
+- TokenCake scheduler execution path for synchronous D2H offload, proactive/demand H2D prefetch, prefix reinsertion before continuation admission, and lifecycle cleanup. Enable it with a non-zero `--agentweave-host-kv-pages` value.
 
 ## Intentionally incomplete
 
-- TokenCake decisions are implemented, but scheduler-side D2H/H2D execution is not yet connected to the host page pool. The scheduler reports such actions with `implemented=false` rather than silently treating them as completed.
-- Host-prefix matching and H2D restoration during prefill admission remain to be implemented.
-- CUDA streams/events, pinned-memory bandwidth calibration, TP synchronization, and GPU correctness/performance tests require a CUDA development machine.
+- TokenCake transfers currently use a synchronous correctness path. CUDA stream/event overlap and transfer calibration remain to be implemented.
+- Demand restore is attempted when a continuation event/request arrives, but deferred retry integrated with prefill resource admission remains to be implemented for extreme GPU pressure.
+- TP synchronization and GPU correctness/performance tests require a CUDA development machine.
 - Wasm sandbox support remains pending.
 
 ## Local validation
