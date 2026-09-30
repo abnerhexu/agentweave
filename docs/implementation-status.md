@@ -29,6 +29,7 @@
 - MHA KV cache page-copy interfaces.
 - Targeted radix eviction of an unshared, unlocked leaf suffix.
 - TokenCake scheduler execution path for synchronous D2H offload, proactive/demand H2D prefetch, prefix reinsertion before continuation admission, and lifecycle cleanup. Enable it with a non-zero `--agentweave-host-kv-pages` value.
+- Configurable D2H/H2D cost parameters and EWMA calibration from observed transfer durations; transfer timing and modeled bandwidth are included in policy event logs.
 
 ## Intentionally incomplete
 
@@ -52,5 +53,24 @@ Static checks:
 /home/hexu/miniconda3/envs/mlsys/bin/python -m ruff check <changed paths>
 /home/hexu/miniconda3/envs/mlsys/bin/python -m black --check <changed paths>
 ```
+
+Run a reproducible Agent API workload (one `AgentRunRequest` JSON object per line, with optional `_delay_s`) with:
+
+```bash
+PYTHONPATH=mini-sglang/python /home/hexu/miniconda3/envs/mlsys/bin/python \
+  -m minisgl.benchmark.agent workload.jsonl --concurrency 8 \
+  --output client-results.jsonl
+```
+
+Use the same workload, concurrency, and initial transfer parameters for No-Control, TokenCake, and Continuum runs.
+
+Summarize one or more scheduler JSONL logs with:
+
+```bash
+PYTHONPATH=mini-sglang/python /home/hexu/miniconda3/envs/mlsys/bin/python \
+  -m minisgl.agentweave.analysis events.jsonl --output summary.json
+```
+
+The summary reports TTFT, generation/tool/sandbox timing distributions, sandbox acquisition sources, KV actions, transferred pages, failures, and measured transfer time.
 
 GPU results must not be inferred from these CPU tests.
