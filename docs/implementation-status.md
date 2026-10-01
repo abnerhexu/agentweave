@@ -30,11 +30,11 @@
 - Targeted radix eviction of an unshared, unlocked leaf suffix.
 - TokenCake scheduler execution path for synchronous D2H offload, proactive/demand H2D prefetch, prefix reinsertion before continuation admission, and lifecycle cleanup. Enable it with a non-zero `--agentweave-host-kv-pages` value.
 - Configurable D2H/H2D cost parameters and EWMA calibration from observed transfer durations; transfer timing and modeled bandwidth are included in policy event logs.
+- Continuations are deferred while demand restore is retried, then admitted when ready or sent through normal prefix recomputation after a configurable timeout/idle fallback.
 
 ## Intentionally incomplete
 
-- TokenCake transfers currently use a synchronous correctness path. CUDA stream/event overlap and transfer calibration remain to be implemented.
-- Demand restore is attempted when a continuation event/request arrives, but deferred retry integrated with prefill resource admission remains to be implemented for extreme GPU pressure.
+- TokenCake transfers currently use a synchronous correctness path. CUDA stream/event overlap remains to be implemented and validated on a GPU machine.
 - TP synchronization and GPU correctness/performance tests require a CUDA development machine.
 - Wasm sandbox support remains pending.
 
@@ -72,5 +72,7 @@ PYTHONPATH=mini-sglang/python /home/hexu/miniconda3/envs/mlsys/bin/python \
 ```
 
 The summary reports TTFT, generation/tool/sandbox timing distributions, sandbox acquisition sources, KV actions, transferred pages, failures, and measured transfer time.
+
+See [`testing.md`](testing.md) for CPU checks, CUDA correctness tests, server launch commands, workload examples, and the policy-comparison procedure.
 
 GPU results must not be inferred from these CPU tests.
