@@ -1,0 +1,62 @@
+{
+  "name": "smoke",
+  "model": "Qwen/Qwen3-0.6B",
+  "description": "Minimal plumbing check: 4 agents, one tool call each, all three KV policies. Verifies the agent endpoint, event logging and report generation end to end. It does NOT produce publishable numbers: with this little load no policy sees GPU pressure, so TokenCake stays at its 'low_pressure' decision.",
+  "workload": {
+    "mode": "synthetic",
+    "num_agents": 4,
+    "seed": 42,
+    "max_steps": 3,
+    "max_tokens": 512,
+    "prompt_padding_tokens": 0,
+    "tool_calls_per_agent": 1,
+    "tools": [
+      {
+        "name": "lookup",
+        "required_keys": [
+          "result"
+        ],
+        "runtime": "lookup",
+        "sandbox_backend": "simulated"
+      }
+    ],
+    "duration": {
+      "kind": "fixed",
+      "value_s": 1.0
+    },
+    "cold_start": {
+      "kind": "fixed",
+      "value_s": 0.1
+    },
+    "arrival": {
+      "kind": "burst"
+    }
+  },
+  "server": {
+    "cache_type": "radix",
+    "host_kv_pages": 4096,
+    "prewarm_threshold": 0.62,
+    "pool_size": 8,
+    "pool_per_key": 2,
+    "continuation_restore_timeout_s": 5.0,
+    "transfer_safety_margin_ms": 2.0,
+    "transfer_calibration_alpha": 0.2
+  },
+  "matrix": {
+    "policies": [
+      "no-control",
+      "tokencake",
+      "continuum"
+    ],
+    "server_variants": [
+      {
+        "name": "default",
+        "overrides": {}
+      }
+    ],
+    "concurrencies": [
+      1
+    ],
+    "repeats": 1
+  }
+}

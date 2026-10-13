@@ -1,0 +1,33 @@
+# AgentWeave experiment harness.
+#
+# This file only configures pytest for the harness in this parent repository.
+# The serving implementation lives in the `mini-sglang` submodule, so its source
+# tree is added to `pythonpath` instead of being installed as a dependency.
+#
+# `addopts = ""` deliberately overrides the coverage flags configured by
+# mini-sglang/pyproject.toml, which are not installed in the CPU-only dev env.
+[tool.pytest.ini_options]
+pythonpath = ["mini-sglang/python", ".", "scripts"]
+testpaths = ["tests"]
+addopts = ""
+
+# Mirrors mini-sglang/pyproject.toml so the harness lints the same way as the
+# submodule it drives. E402 is deliberately not selected: entry points insert
+# the submodule path into sys.path before importing from it.
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+lint.select = ["W", "F", "I", "C4"]
+lint.ignore = [
+    "E501", # line too long, handled by black
+    "B008", # do not perform function calls in argument defaults
+    "C901", # too complex
+]
+# mini-sglang is excluded so a repo-wide `ruff --fix .` can never rewrite the
+# pinned submodule revision the parent repo records.
+exclude = [".git", "__pycache__", ".pytest_cache", "results", "mini-sglang"]
+
+[tool.black]
+target-version = ["py310"]
+line-length = 100

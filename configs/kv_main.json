@@ -1,0 +1,69 @@
+{
+  "name": "kv-main",
+  "model": "Qwen/Qwen3-0.6B",
+  "description": "Observation 2 (KV lifecycle during tool execution). Prewarm mechanism held fixed; only the KV policy varies. Sweeps concurrency and tool-duration spread. Requires a GPU machine and a model whose prompt+output length is enough to make KV pressure real.",
+  "workload": {
+    "mode": "synthetic",
+    "num_agents": 32,
+    "seed": 7,
+    "max_steps": 4,
+    "max_tokens": 512,
+    "prompt_padding_tokens": 512,
+    "tool_calls_per_agent": 1,
+    "tools": [
+      {
+        "name": "lookup",
+        "required_keys": [
+          "result"
+        ],
+        "runtime": "lookup",
+        "sandbox_backend": "simulated"
+      }
+    ],
+    "duration": {
+      "kind": "lognormal",
+      "median_s": 2.0,
+      "sigma": 0.7
+    },
+    "cold_start": {
+      "kind": "fixed",
+      "value_s": 0.1
+    },
+    "arrival": {
+      "kind": "burst"
+    }
+  },
+  "server": {
+    "cache_type": "radix",
+    "host_kv_pages": 4096,
+    "prewarm_threshold": 0.62,
+    "pool_size": 32,
+    "pool_per_key": 4,
+    "continuation_restore_timeout_s": 5.0,
+    "transfer_safety_margin_ms": 2.0,
+    "transfer_calibration_alpha": 0.2,
+    "extra_args": [
+      "--num-page-override",
+      "8192"
+    ]
+  },
+  "matrix": {
+    "policies": [
+      "no-control",
+      "tokencake",
+      "continuum"
+    ],
+    "server_variants": [
+      {
+        "name": "default",
+        "overrides": {}
+      }
+    ],
+    "concurrencies": [
+      1,
+      4,
+      8
+    ],
+    "repeats": 3
+  }
+}

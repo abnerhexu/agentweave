@@ -1,0 +1,68 @@
+{
+  "name": "prewarm",
+  "model": "Qwen/Qwen3-0.6B",
+  "description": "Observation 1 (speculative sandbox prewarming). KV policy held at no-control so the measured effect is the sandbox cold start, not KV migration. Compares warm-pool reuse on/off at a fixed threshold. The 'prewarm-off' arm uses a threshold no realistic confidence can reach; see README for why a true disable flag needs a submodule change.",
+  "workload": {
+    "mode": "structured",
+    "num_agents": 16,
+    "seed": 11,
+    "max_steps": 4,
+    "max_tokens": 512,
+    "prompt_padding_tokens": 64,
+    "argument_padding_tokens": 128,
+    "padded_argument": "payload",
+    "tool_calls_per_agent": 1,
+    "tools": [
+      {
+        "name": "search_corpus",
+        "required_keys": ["query", "payload"],
+        "runtime": "corpus",
+        "sandbox_backend": "simulated"
+      },
+      {
+        "name": "fetch_document",
+        "required_keys": ["doc_id", "payload"],
+        "runtime": "document",
+        "sandbox_backend": "simulated"
+      },
+      {
+        "name": "run_analysis",
+        "required_keys": ["script", "payload"],
+        "runtime": "analysis",
+        "sandbox_backend": "simulated"
+      }
+    ],
+    "duration": { "kind": "fixed", "value_s": 0.5 },
+    "cold_start": { "kind": "uniform", "low_s": 0.2, "high_s": 1.0 },
+    "arrival": { "kind": "poisson", "rate_per_s": 4.0 }
+  },
+  "server": {
+    "cache_type": "radix",
+    "host_kv_pages": 4096,
+    "prewarm_threshold": 0.62,
+    "pool_size": 16,
+    "pool_per_key": 2,
+    "continuation_restore_timeout_s": 5.0,
+    "transfer_safety_margin_ms": 2.0,
+    "transfer_calibration_alpha": 0.2
+  },
+  "matrix": {
+    "policies": ["no-control"],
+    "server_variants": [
+      {
+        "name": "prewarm-off",
+        "overrides": { "prewarm_threshold": 1.0, "pool_size": 0, "pool_per_key": 0 }
+      },
+      {
+        "name": "prewarm-confidence",
+        "overrides": { "pool_size": 0, "pool_per_key": 0 }
+      },
+      {
+        "name": "prewarm-confidence-pool",
+        "overrides": {}
+      }
+    ],
+    "concurrencies": [1, 4, 8],
+    "repeats": 3
+  }
+}

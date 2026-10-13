@@ -1,0 +1,12 @@
+# Tooling caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Experiment outputs: run directories, event logs, generated workloads
+results/
+*.jsonl
+
+# Local environment overrides
+.env
